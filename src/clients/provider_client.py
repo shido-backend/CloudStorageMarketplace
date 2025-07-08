@@ -11,17 +11,18 @@ from .base_provider import BaseProviderClient
 
 class ProviderClient(BaseProviderClient):
     def __init__(self, provider_name: str, redis_client: Redis):
-        file_name = f"{provider_name.lower()}"
+        file_name = f"{provider_name.lower()}.json" if not provider_name.endswith(".json") else provider_name.lower()
         super().__init__(file_name, redis_client)
 
 
 def get_provider_client(
     provider_name: str, redis_client: Redis = Depends(get_redis_client)
 ):
-    file_path = Path(__file__).parent / f"{provider_name.lower()}"
+    provider_name_clean = provider_name.replace(".json", "")
+    file_path = Path(__file__).parent / f"{provider_name_clean.lower()}.json"
     if not file_path.exists():
         raise FileNotFoundError(f"Provider config file not found: {file_path}")
-    return ProviderClient(provider_name, redis_client)
+    return ProviderClient(provider_name_clean, redis_client)
 
 
 def get_provider_clients_with_list(redis_client: Redis = Depends(get_redis_client)):
