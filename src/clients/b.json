@@ -1,0 +1,7 @@
+[
+    {"provider": "B", "storage_gb": 50, "price_per_gb": 0.03},
+    {"provider": "B", "storage_gb": 150, "price_per_gb": 0.018},
+    {"provider": "B", "storage_gb": 300, "price_per_gb": 0.012},
+    {"provider": "B", "storage_gb": 600, "price_per_gb": 0.008},
+    {"provider": "B", "storage_gb": 1200, "price_per_gb": 0.004}
+]
