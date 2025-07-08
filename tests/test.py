@@ -1,4 +1,3 @@
-# tests/test.py
 import pytest
 import asyncio
 import json
@@ -27,7 +26,6 @@ def mock_order_service(mocker):
 @pytest.fixture
 def mock_pricing_plan_service(mocker):
     service = mocker.MagicMock()
-    # Обновляем мок, чтобы он возвращал 10 планов, соответствующих выводу API
     service.get_filtered_and_sorted_plans.return_value = [
         PricingPlan(provider="B", storage_gb=50, price_per_gb=0.03),
         PricingPlan(provider="A", storage_gb=100, price_per_gb=0.02),
@@ -44,7 +42,6 @@ def mock_pricing_plan_service(mocker):
 
 @pytest.fixture
 def setup_provider_configs(tmp_path, mocker):
-    # Создаем файлы a.json и b.json с данными, соответствующими выводу API
     provider_a = tmp_path / "a.json"
     provider_b = tmp_path / "b.json"
     provider_a.write_text(json.dumps([
@@ -61,7 +58,6 @@ def setup_provider_configs(tmp_path, mocker):
         {"provider": "B", "storage_gb": 600, "price_per_gb": 0.008},
         {"provider": "B", "storage_gb": 1200, "price_per_gb": 0.004}
     ]))
-    # Патчим путь в BaseProviderClient
     mocker.patch(
         "src.clients.base_provider.Path",
         side_effect=lambda *args, **kwargs: tmp_path / args[0] if args else tmp_path
@@ -78,7 +74,6 @@ def mock_redis_client(mocker):
 def test_get_pricing_plans_filter_and_sort(mock_pricing_plan_service, setup_provider_configs, mock_redis_client, mocker):
     mocker.patch("src.routers.pricing_plans.get_pricing_plan_service", return_value=mock_pricing_plan_service)
     mocker.patch("src.core.redis_client.get_redis_client", return_value=mock_redis_client)
-    # Патчим get_provider_clients_with_list для соответствия данным из файлов
     mock_provider_clients = [
         mocker.MagicMock(get_pricing_plans=lambda: [
             PricingPlan(provider="A", storage_gb=100, price_per_gb=0.02),
@@ -99,8 +94,7 @@ def test_get_pricing_plans_filter_and_sort(mock_pricing_plan_service, setup_prov
     response = client.get("/pricing-plans?min_storage=50")
     assert response.status_code == 200
     plans = response.json()
-    assert len(plans) == 10  # Ожидаем 10 планов
-    # Проверяем, что планы соответствуют выводу API
+    assert len(plans) == 10  
     assert plans == [
         {"provider": "B", "storage_gb": 50, "price_per_gb": 0.03},
         {"provider": "A", "storage_gb": 100, "price_per_gb": 0.02},
@@ -113,7 +107,6 @@ def test_get_pricing_plans_filter_and_sort(mock_pricing_plan_service, setup_prov
         {"provider": "A", "storage_gb": 1000, "price_per_gb": 0.005},
         {"provider": "A", "storage_gb": 2000, "price_per_gb": 0.0025}
     ]
-    # Проверяем сортировку по общей цене
     for i in range(len(plans) - 1):
         assert (plans[i]["storage_gb"] * plans[i]["price_per_gb"] <=
                 plans[i + 1]["storage_gb"] * plans[i + 1]["price_per_gb"])
